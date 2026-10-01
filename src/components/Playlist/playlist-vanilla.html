@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Playlist - HTML puro</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #f2f2f2;
+      display: flex;
+      justify-content: center;
+      padding-top: 40px;
+    }
+
+    .album {
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      width: 380px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    }
+
+    .contador {
+      text-align: right;
+      font-size: 0.9rem;
+      margin-bottom: 12px;
+    }
+
+    .album img {
+      width: 100%;
+      border-radius: 6px;
+    }
+
+    .encabezado {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 12px 0 4px;
+    }
+
+    .genero {
+      font-size: 0.8rem;
+      color: #888;
+      text-transform: uppercase;
+      margin: 0;
+    }
+
+    .btn-favorito {
+      border: 1px solid #ccc;
+      background: #fff;
+      border-radius: 16px;
+      padding: 4px 10px;
+      cursor: pointer;
+      font-size: 0.85rem;
+    }
+
+    .btn-favorito.marcado {
+      border-color: #e0245e;
+      color: #e0245e;
+    }
+
+    .album h2 {
+      margin: 0 0 4px;
+    }
+
+    .artista {
+      color: #555;
+      margin: 0 0 8px;
+    }
+
+    .subtitulo {
+      font-size: 0.85rem;
+      font-weight: bold;
+      margin: 16px 0 6px;
+    }
+
+    .canciones,
+    .playlist {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .canciones li,
+    .playlist li {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 0;
+      border-bottom: 1px solid #eee;
+    }
+
+    .nombre {
+      flex: 1;
+    }
+
+    .duracion {
+      font-size: 0.8rem;
+      color: #888;
+    }
+
+    .btn-agregar {
+      border: 1px solid #7048e8;
+      background: #fff;
+      color: #7048e8;
+      border-radius: 6px;
+      padding: 4px 8px;
+      cursor: pointer;
+    }
+
+    .btn-agregar:disabled {
+      border-color: #ccc;
+      color: #aaa;
+      cursor: not-allowed;
+    }
+
+    .btn-quitar {
+      border: none;
+      background: none;
+      color: #c92a2a;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+
+    .vacia {
+      font-size: 0.9rem;
+      color: #888;
+      font-style: italic;
+    }
+
+    .btn-vaciar {
+      width: 100%;
+      margin-top: 12px;
+      padding: 10px;
+      border: none;
+      border-radius: 6px;
+      background: #7048e8;
+      color: #fff;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="album">
+    <div class="contador">🎵 Mi playlist: <span id="contador">0</span> canciones</div>
+
+    <img src="https://picsum.photos/seed/album/360/200" alt="Playlist Musica">
+
+    <div class="encabezado">
+      <p class="genero">Rock · 2024</p>
+      <button class="btn-favorito" id="favorito">♡ Favorito</button>
+    </div>
+
+    <h2>Favoritos</h2>
+    <ul class="canciones">
+      <li>
+        <span class="nombre">Mil horas</span>
+        <span class="duracion">2:47</span>
+        <button class="btn-agregar" data-id="1" data-nombre="Mil horas">+ Agregar</button>
+      </li>
+      <li>
+        <span class="nombre">Adios</span>
+        <span class="duracion">3:54</span>
+        <button class="btn-agregar" data-id="2" data-nombre="Adios">+ Agregar</button>
+      </li>
+      <li>
+        <span class="nombre">Purple Rain</span>
+        <span class="duracion">8:44</span>
+        <button class="btn-agregar" data-id="3" data-nombre="Purple Rain">+ Agregar</button>
+      </li>
+      <li>
+        <span class="nombre">Easy Lover</span>
+        <span class="duracion">6:21</span>
+        <button class="btn-agregar" data-id="4" data-nombre="Easy Lover">+ Agregar</button>
+      </li>
+      <li>
+        <span class="nombre">Lisa</span>
+        <span class="duracion">4:25</span>
+        <button class="btn-agregar" data-id="5" data-nombre="Lisa">+ Agregar</button>
+      </li>
+    </ul>
+
+    <p class="subtitulo">Mi playlist</p>
+    <div id="mi-playlist"></div>
+  </div>
+
+  <script>
+    let playlist = []
+    let esFavorito = false
+
+    const contador = document.getElementById('contador')
+    const miPlaylist = document.getElementById('mi-playlist')
+    const botonFavorito = document.getElementById('favorito')
+    const botonesAgregar = document.querySelectorAll('.btn-agregar')
+
+    function mostrar() {
+      contador.textContent = playlist.length
+
+      // Los botones de las canciones que ya están en la playlist quedan deshabilitados
+      botonesAgregar.forEach((boton) => {
+        const yaEsta = playlist.some((c) => c.id === boton.dataset.id)
+        boton.disabled = yaEsta
+        boton.textContent = yaEsta ? '✓ Agregada' : '+ Agregar'
+      })
+
+      if (playlist.length === 0) {
+        miPlaylist.innerHTML = '<p class="vacia">Tu playlist está vacía.</p>'
+        return
+      }
+
+      miPlaylist.innerHTML = `
+        <ul class="playlist">
+          ${playlist.map((c) => `
+            <li>
+              <span class="nombre">${c.nombre}</span>
+              <button class="btn-quitar" data-id="${c.id}">✕</button>
+            </li>
+          `).join('')}
+        </ul>
+        <button class="btn-vaciar" id="vaciar">Vaciar playlist</button>
+      `
+
+      miPlaylist.querySelectorAll('.btn-quitar').forEach((boton) => {
+        boton.addEventListener('click', () => {
+          playlist = playlist.filter((c) => c.id !== boton.dataset.id)
+          mostrar()
+        })
+      })
+
+      document.getElementById('vaciar').addEventListener('click', () => {
+        playlist = []
+        mostrar()
+      })
+    }
+
+    botonesAgregar.forEach((boton) => {
+      boton.addEventListener('click', () => {
+        playlist = [...playlist, { id: boton.dataset.id, nombre: boton.dataset.nombre }]
+        mostrar()
+      })
+    })
+
+    botonFavorito.addEventListener('click', () => {
+      esFavorito = !esFavorito
+      botonFavorito.textContent = esFavorito ? '♥ En favoritos' : '♡ Favorito'
+      botonFavorito.classList.toggle('marcado', esFavorito)
+    })
+
+    mostrar()
+  </script>
+
+</body>
+</html>
